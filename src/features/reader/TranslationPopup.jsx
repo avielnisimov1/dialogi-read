@@ -1,13 +1,14 @@
-import { useState, useEffect, useRef } from 'react'
-import { translateWord, translateSentence } from '../../services/translationService'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { translateWord, translateSentence, getWordDetail } from '../../services/translationService'
 import './reader.css'
 
-// Light bubble — just the Hebrew translation
-export function BubblePopup({ word, sentence, position, onClose }) {
+// Light bubble — only Hebrew translation, click to expand
+export function BubblePopup({ word, sentence, position, onClose, onExpand }) {
   const [hebrew, setHebrew] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const bubbleRef = useRef(null)
+  const initialScrollRef = useRef(0)
 
   useEffect(() => {
     let cancelled = false
@@ -27,18 +28,36 @@ export function BubblePopup({ word, sentence, position, onClose }) {
     return () => { cancelled = true }
   }, [word, sentence])
 
-  const bubbleHeight = 50
+  // Dismiss on scroll
+  useEffect(() => {
+    initialScrollRef.current = window.scrollY
+    const handleScroll = () => {
+      if (Math.abs(window.scrollY - initialScrollRef.current) > 20) {
+        onClose()
+      }
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [onClose])
+
+  const bubbleHeight = 46
   const showBelow = position ? position.top < bubbleHeight + 10 : false
 
   const style = {}
   if (position) {
     style.left = Math.min(Math.max(position.left, 60), window.innerWidth - 60)
     style.transform = 'translateX(-50%)'
-
     if (showBelow) {
       style.top = position.bottom + 8
     } else {
       style.top = position.top - bubbleHeight - 8
+    }
+  }
+
+  const handleBubbleClick = (e) => {
+    e.stopPropagation()
+    if (!loading && !error && hebrew) {
+      onExpand()
     }
   }
 
@@ -49,6 +68,7 @@ export function BubblePopup({ word, sentence, position, onClose }) {
         ref={bubbleRef}
         className={`bubble-popup ${showBelow ? 'bubble-below' : ''}`}
         style={style}
+        onClick={handleBubbleClick}
       >
         {loading && <span className="bubble-loading">...</span>}
         {error && <span className="bubble-error">?</span>}
@@ -58,8 +78,88 @@ export function BubblePopup({ word, sentence, position, onClose }) {
   )
 }
 
-// Full popup — word + explanation + sentence translation
-export function FullPopup({ word, sentence, onClose }) {
+// Detail popup — full word info
+export function DetailPopup({ word, sentence, onClose }) {
+  const [detail, setDetail] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    setLoading(true)
+    setError(false)
+
+    getWordDetail(word, sentence).then(result => {
+      if (cancelled) return
+      setDetail(result)
+      setLoading(false)
+    }).catch(() => {
+      if (cancelled) return
+      setError(true)
+      setLoading(false)
+    })
+
+    return () => { cancelled = true }
+  }, [word, sentence])
+
+  return (
+    <div className="popup-overlay" onClick={onClose}>
+      <div className="popup-sheet" onClick={(e) => e.stopPropagation()}>
+        <div className="popup-handle" />
+
+        {loading && (
+          <div className="popup-loading">
+            <div className="spinner" />
+            <p>טוען פרטים...</p>
+          </div>
+        )}
+
+        {error && (
+          <div className="popup-error">
+            <p>לא הצלחתי לטעון, נסה שוב</p>
+          </div>
+        )}
+
+        {!loading && !error && detail && (
+          <div className="popup-word-result">
+            <div className="popup-english-word">{word}</div>
+            <div className="popup-hebrew">{detail.hebrew}</div>
+
+            {detail.explanation && (
+              <div className="popup-explanation">{detail.explanation}</div>
+            )}
+
+            {detail.otherMeanings?.length > 0 && (
+              <div className="popup-other-meanings">
+                <div className="popup-section-label">משמעויות נוספות</div>
+                <div className="popup-meanings-list">
+                  {detail.otherMeanings.map((m, i) => (
+                    <span key={i} className="popup-meaning-tag">{m}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {detail.exampleSentences?.length > 0 && (
+              <div className="popup-examples-section">
+                <div className="popup-section-label">דוגמאות</div>
+                {detail.exampleSentences.map((ex, i) => (
+                  <div key={i} className="popup-example-pair">
+                    <div className="popup-example-en" dir="ltr">{ex.en}</div>
+                    <div className="popup-example-he">{ex.he}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// Full popup for long press — sentence translation
+export function SentencePopup({ word, sentence, onClose }) {
   const [wordResult, setWordResult] = useState(null)
   const [sentenceHebrew, setSentenceHebrew] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -77,7 +177,6 @@ export function FullPopup({ word, sentence, onClose }) {
       if (cancelled) return
       if (wordRes.status === 'fulfilled') setWordResult(wordRes.value)
       if (sentenceRes.status === 'fulfilled') setSentenceHebrew(sentenceRes.value)
-      // If both failed, show error
       if (wordRes.status === 'rejected' && sentenceRes.status === 'rejected') {
         setError(true)
       }
@@ -105,12 +204,13 @@ export function FullPopup({ word, sentence, onClose }) {
           </div>
         )}
 
-        {!loading && !error && wordResult && (
+        {!loading && !error && (
           <div className="popup-word-result">
-            <div className="popup-english-word">{word}</div>
-            <div className="popup-hebrew">{wordResult.hebrew}</div>
-            {wordResult.explanation && (
-              <div className="popup-explanation">{wordResult.explanation}</div>
+            {wordResult && (
+              <>
+                <div className="popup-english-word">{word}</div>
+                <div className="popup-hebrew">{wordResult.hebrew}</div>
+              </>
             )}
 
             {sentenceHebrew && (
@@ -127,9 +227,12 @@ export function FullPopup({ word, sentence, onClose }) {
   )
 }
 
-export default function TranslationPopup({ word, sentence, mode, position, onClose }) {
+export default function TranslationPopup({ word, sentence, mode, position, onClose, onExpandBubble }) {
   if (mode === 'word') {
-    return <BubblePopup word={word} sentence={sentence} position={position} onClose={onClose} />
+    return <BubblePopup word={word} sentence={sentence} position={position} onClose={onClose} onExpand={onExpandBubble} />
   }
-  return <FullPopup word={word} sentence={sentence} onClose={onClose} />
+  if (mode === 'detail') {
+    return <DetailPopup word={word} sentence={sentence} onClose={onClose} />
+  }
+  return <SentencePopup word={word} sentence={sentence} onClose={onClose} />
 }

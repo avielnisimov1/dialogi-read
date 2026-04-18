@@ -34,6 +34,7 @@ function getAutoTextColor(bgColor) {
 const DEFAULT_SETTINGS = {
   fontSize: 20,
   lineHeight: 2,
+  wordSpacing: 5,
   fontFamily: FONTS[0].value,
   textColor: TEXT_COLORS[0].value,
   bgColor: BG_COLORS[0].value,
@@ -65,6 +66,7 @@ export function useReaderSettings() {
     '--reader-font-size': settings.fontSize + 'px',
     '--reader-line-height': settings.lineHeight,
     '--reader-color': settings.textColor,
+    '--reader-word-spacing': settings.wordSpacing + 'px',
   }
 
   return { settings, update, cssVars }
@@ -111,6 +113,26 @@ export default function ReaderSettings({ settings, onUpdate, onClose }) {
             <button
               className="setting-btn"
               onClick={() => onUpdate('lineHeight', Math.min(3, +(settings.lineHeight + 0.2).toFixed(1)))}
+            >
+              +
+            </button>
+          </div>
+        </div>
+
+        {/* Word spacing */}
+        <div className="setting-row">
+          <span className="setting-label">מרווח מילים</span>
+          <div className="setting-control">
+            <button
+              className="setting-btn"
+              onClick={() => onUpdate('wordSpacing', Math.max(0, settings.wordSpacing - 1))}
+            >
+              -
+            </button>
+            <span className="setting-value">{settings.wordSpacing}</span>
+            <button
+              className="setting-btn"
+              onClick={() => onUpdate('wordSpacing', Math.min(15, settings.wordSpacing + 1))}
             >
               +
             </button>

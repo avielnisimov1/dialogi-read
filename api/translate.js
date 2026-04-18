@@ -63,21 +63,35 @@ export default async function handler(req, res) {
   const cleanSentence = sanitize(sentence, 500)
 
   let prompt
+  let maxTokens = 200
 
   if (mode === 'sentence') {
-    prompt = `תרגם את המשפט הבא לעברית. תן רק את התרגום, בלי הסברים.
+    prompt = `אתה מתרגם משפטים מאנגלית לעברית. המטרה היא שהקורא יבין בדיוק את הכוונה והמשמעות של המשפט בהקשר שבו הוא מופיע.
 
-משפט: "${cleanSentence}"
+המשפט: "${cleanSentence}"
 
-תרגום:`
-  } else {
-    prompt = `אתה מתרגם מילים מאנגלית לעברית עבור קורא שלומד אנגלית.
+תרגם את המשפט לעברית טבעית וזורמת. תן רק את התרגום, בלי הסברים נוספים.`
+  } else if (mode === 'detail') {
+    maxTokens = 500
+    prompt = `אתה מורה לאנגלית שעוזר לקורא ישראלי להבין מילים באנגלית.
 
 המילה: "${cleanWord}"
-המשפט שבו המילה מופיעה: "${cleanSentence}"
+המשפט שבו היא מופיעה: "${cleanSentence}"
 
 תן תשובה בפורמט JSON בלבד (בלי markdown, בלי backticks):
-{"hebrew":"התרגום לעברית של המילה בהקשר הזה","explanation":"הסבר קצר בעברית למה זה התרגום הנכון בהקשר הזה, משפט אחד"}`
+{
+  "hebrew": "התרגום לעברית של המילה בהקשר הזה",
+  "explanation": "הסבר קצר בעברית על המשמעות של המילה בהקשר הזה",
+  "otherMeanings": ["משמעות נוספת 1 בעברית", "משמעות נוספת 2 בעברית"],
+  "exampleSentences": [
+    {"en": "משפט לדוגמה באנגלית עם המילה", "he": "תרגום המשפט לעברית"},
+    {"en": "משפט נוסף לדוגמה", "he": "תרגום"}
+  ]
+}`
+  } else {
+    prompt = `תרגם את המילה "${cleanWord}" לעברית.
+המשפט שבו היא מופיעה: "${cleanSentence}"
+תן רק את המילה בעברית, מילה אחת או שתיים, בלי שום הסבר או תוספת.`
   }
 
   try {
@@ -93,7 +107,7 @@ export default async function handler(req, res) {
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: {
             temperature: 0.1,
-            maxOutputTokens: 200,
+            maxOutputTokens: maxTokens,
           },
         }),
       }
@@ -112,17 +126,23 @@ export default async function handler(req, res) {
       return res.status(200).json({ translation: text })
     }
 
-    // Parse JSON response for word translation
-    try {
-      const cleaned = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim()
-      const parsed = JSON.parse(cleaned)
-      return res.status(200).json({
-        hebrew: parsed.hebrew || '',
-        explanation: parsed.explanation || '',
-      })
-    } catch {
-      return res.status(200).json({ hebrew: text, explanation: '' })
+    if (mode === 'detail') {
+      try {
+        const cleaned = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim()
+        const parsed = JSON.parse(cleaned)
+        return res.status(200).json({
+          hebrew: parsed.hebrew || '',
+          explanation: parsed.explanation || '',
+          otherMeanings: parsed.otherMeanings || [],
+          exampleSentences: parsed.exampleSentences || [],
+        })
+      } catch {
+        return res.status(200).json({ hebrew: text, explanation: '', otherMeanings: [], exampleSentences: [] })
+      }
     }
+
+    // Simple word mode — just the Hebrew word
+    return res.status(200).json({ hebrew: text })
   } catch (err) {
     console.error('Fetch error:', err)
     return res.status(500).json({ error: 'Internal server error' })

@@ -10,35 +10,27 @@ function getCache() {
 function pruneCache(cache) {
   const entries = Object.entries(cache)
   if (entries.length <= MAX_CACHE_ENTRIES) return cache
-
-  // Sort by cachedAt ascending (oldest first), remove oldest
   entries.sort((a, b) => (a[1].cachedAt || '').localeCompare(b[1].cachedAt || ''))
   const toRemove = entries.length - MAX_CACHE_ENTRIES
-  const pruned = Object.fromEntries(entries.slice(toRemove))
-  return pruned
+  return Object.fromEntries(entries.slice(toRemove))
 }
 
-function cacheWord(word, sentence, result) {
+function cacheResult(key, result) {
   const cache = getCache()
-  const key = `${word.toLowerCase()}__${sentence.slice(0, 50)}`
   cache[key] = { ...result, cachedAt: new Date().toISOString() }
-  if (!cache[word.toLowerCase()]) {
-    cache[word.toLowerCase()] = { ...result, cachedAt: new Date().toISOString() }
-  }
   setItem(STORAGE_KEYS.TRANSLATIONS, pruneCache(cache))
 }
 
 /**
- * Translate a single word using Gemini AI with sentence context.
+ * Translate a single word — returns just the Hebrew word.
  */
 export async function translateWord(word, sentence = '') {
   const clean = word.toLowerCase().trim()
   if (!clean) return null
 
+  const cacheKey = `w:${clean}:${sentence.slice(0, 50)}`
   const cache = getCache()
-  const contextKey = `${clean}__${sentence.slice(0, 50)}`
-  if (cache[contextKey]) return cache[contextKey]
-  if (cache[clean]) return cache[clean]
+  if (cache[cacheKey]) return cache[cacheKey]
 
   try {
     const res = await fetch('/api/translate', {
@@ -50,24 +42,58 @@ export async function translateWord(word, sentence = '') {
     if (!res.ok) throw new Error('Translation failed')
 
     const data = await res.json()
-    const result = {
-      hebrew: data.hebrew || '',
-      explanation: data.explanation || '',
-      provider: 'gemini',
-    }
+    const result = { hebrew: data.hebrew || '' }
 
     if (result.hebrew) {
-      cacheWord(clean, sentence, result)
+      cacheResult(cacheKey, result)
     }
 
     return result
   } catch {
-    return { hebrew: '', explanation: '', provider: 'error' }
+    return { hebrew: '' }
   }
 }
 
 /**
- * Translate a full sentence using Gemini AI.
+ * Get detailed word info — translation, explanation, other meanings, examples.
+ */
+export async function getWordDetail(word, sentence = '') {
+  const clean = word.toLowerCase().trim()
+  if (!clean) return null
+
+  const cacheKey = `d:${clean}:${sentence.slice(0, 50)}`
+  const cache = getCache()
+  if (cache[cacheKey]) return cache[cacheKey]
+
+  try {
+    const res = await fetch('/api/translate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ word: clean, sentence, mode: 'detail' }),
+    })
+
+    if (!res.ok) throw new Error('Detail failed')
+
+    const data = await res.json()
+    const result = {
+      hebrew: data.hebrew || '',
+      explanation: data.explanation || '',
+      otherMeanings: data.otherMeanings || [],
+      exampleSentences: data.exampleSentences || [],
+    }
+
+    if (result.hebrew) {
+      cacheResult(cacheKey, result)
+    }
+
+    return result
+  } catch {
+    return { hebrew: '', explanation: '', otherMeanings: [], exampleSentences: [] }
+  }
+}
+
+/**
+ * Translate a full sentence.
  */
 export async function translateSentence(sentence) {
   const trimmed = sentence.trim()

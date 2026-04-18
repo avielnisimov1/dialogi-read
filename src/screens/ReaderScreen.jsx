@@ -138,6 +138,7 @@ export default function ReaderScreen({
           mode={popupMode}
           position={wordPosition}
           onClose={handleClosePopup}
+          onExpandBubble={() => setPopupMode('detail')}
         />
       )}
 
