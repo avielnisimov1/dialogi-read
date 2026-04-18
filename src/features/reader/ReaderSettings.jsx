@@ -34,7 +34,7 @@ function getAutoTextColor(bgColor) {
 const DEFAULT_SETTINGS = {
   fontSize: 20,
   lineHeight: 2,
-  wordSpacing: 5,
+  wordSpacing: 7,
   fontFamily: FONTS[0].value,
   textColor: TEXT_COLORS[0].value,
   bgColor: BG_COLORS[0].value,
