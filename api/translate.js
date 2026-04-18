@@ -77,7 +77,7 @@ export default async function handler(req, res) {
 
 תרגום מלא:`
   } else if (mode === 'detail') {
-    maxTokens = 700
+    maxTokens = 2000
     prompt = `אתה מורה פרטי לאנגלית שמלמד קורא ישראלי. תפקידך להסביר מילה באנגלית בצורה מעמיקה, ברורה ושימושית.
 
 המילה: "${cleanWord}"
@@ -116,6 +116,7 @@ export default async function handler(req, res) {
           generationConfig: {
             temperature: 0.1,
             maxOutputTokens: maxTokens,
+            ...(mode !== 'detail' ? { thinkingConfig: { thinkingBudget: 0 } } : {}),
           },
         }),
       }
