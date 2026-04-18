@@ -42,11 +42,11 @@
 .bubble-popup {
   position: fixed;
   z-index: 101;
-  background: #333;
+  background: #5B6ABF;
   color: #fff;
   padding: 10px 16px;
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 4px 20px rgba(91, 106, 191, 0.4);
   animation: bubblePop 0.15s ease-out;
   max-width: 200px;
   text-align: center;
@@ -60,7 +60,7 @@
   left: 50%;
   width: 12px;
   height: 12px;
-  background: #333;
+  background: #5B6ABF;
   border-radius: 2px;
   transform: translateX(-50%) rotate(45deg);
 }
@@ -110,12 +110,13 @@
 
 .popup-sheet {
   background: var(--color-bg-card);
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  border-radius: 20px 20px 0 0;
   width: 100%;
   max-width: 600px;
   padding: var(--spacing-md) var(--spacing-lg) var(--spacing-xl);
   min-height: 160px;
   animation: slideUp 0.2s ease-out;
+  box-shadow: 0 -4px 24px rgba(99, 102, 241, 0.1);
 }
 
 @keyframes slideUp {
@@ -342,10 +343,10 @@
   left: 0;
   right: 0;
   background: var(--color-bg-card);
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  border-radius: 20px 20px 0 0;
   padding: var(--spacing-md) var(--spacing-lg) var(--spacing-xl);
   z-index: 200;
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 -4px 24px rgba(99, 102, 241, 0.1);
   animation: slideUp 0.2s ease-out;
   direction: rtl;
 }

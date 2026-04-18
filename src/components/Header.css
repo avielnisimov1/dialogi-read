@@ -3,11 +3,12 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--spacing-md);
-  background-color: var(--color-bg);
+  background-color: #FFFFFF;
   position: sticky;
   top: 0;
   z-index: 10;
   border-bottom: 1px solid var(--color-border);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.06);
 }
 
 .header-right {
@@ -19,7 +20,7 @@
 .header-title {
   font-size: 20px;
   font-weight: 600;
-  color: var(--color-text);
+  color: var(--color-primary);
 }
 
 .header-back {
@@ -35,4 +36,5 @@
   padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: var(--radius-sm);
   border: 1px solid var(--color-border);
+  background: var(--color-primary-light);
 }
