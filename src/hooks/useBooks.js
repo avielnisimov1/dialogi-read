@@ -42,6 +42,15 @@ export function useBooks() {
     saveBooks(updated)
   }, [books, saveBooks])
 
+  const togglePin = useCallback((bookId) => {
+    const book = books.find(b => b.id === bookId)
+    if (!book) return
+    const pinnedCount = books.filter(b => b.pinned).length
+    // Max 3 pinned
+    if (!book.pinned && pinnedCount >= 3) return
+    updateBook(bookId, { pinned: !book.pinned })
+  }, [books, updateBook])
+
   const getBook = useCallback((bookId) => {
     return books.find(b => b.id === bookId) || null
   }, [books])
@@ -81,6 +90,7 @@ export function useBooks() {
     createBook,
     deleteBook,
     updateBook,
+    togglePin,
     getBook,
     getPages,
     addPage,

@@ -63,6 +63,7 @@ function App() {
           books={bookOps.books}
           navigate={navigate}
           deleteBook={bookOps.deleteBook}
+          togglePin={bookOps.togglePin}
         />
       )}
 

@@ -4,7 +4,7 @@
   line-height: var(--reader-line-height, 1.6);
   color: var(--reader-color, #1A1A2E);
   text-align: left;
-  word-spacing: var(--reader-word-spacing, 7px);
+  word-spacing: 0;
   letter-spacing: 0.01em;
   user-select: none;
   -webkit-user-select: none;
@@ -29,6 +29,7 @@
   cursor: pointer;
   border-radius: 4px;
   padding: 2px 1px;
+  margin-left: var(--reader-word-spacing, 7px);
   transition: background-color 0.15s;
   -webkit-tap-highlight-color: transparent;
   display: inline;
@@ -36,6 +37,7 @@
 
 .word-token-punct {
   display: inline;
+  margin-left: var(--reader-word-spacing, 7px);
 }
 
 .word-token:active {

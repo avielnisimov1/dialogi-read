@@ -7,7 +7,6 @@
 .swipeable-actions {
   position: absolute;
   top: 0;
-  left: 0;
   bottom: 0;
   width: 100px;
   display: flex;
@@ -15,11 +14,32 @@
   justify-content: center;
 }
 
+.swipeable-actions-left {
+  left: 0;
+}
+
+.swipeable-actions-right {
+  right: 0;
+}
+
 .swipeable-delete-btn {
   background: var(--color-danger);
   color: white;
   border: none;
   padding: 10px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font-hebrew);
+  cursor: pointer;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.swipeable-pin-btn {
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  padding: 10px 16px;
   border-radius: 12px;
   font-size: 14px;
   font-weight: 600;

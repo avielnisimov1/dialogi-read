@@ -1,8 +1,18 @@
+import { useMemo } from 'react'
 import { SCREENS } from '../utils/constants'
 import SwipeableCard from '../components/SwipeableCard'
 import './HomeScreen.css'
 
-export default function HomeScreen({ books, navigate, deleteBook }) {
+export default function HomeScreen({ books, navigate, deleteBook, togglePin }) {
+  // Sort: pinned first, then by updatedAt
+  const sortedBooks = useMemo(() => {
+    return [...books].sort((a, b) => {
+      if (a.pinned && !b.pinned) return -1
+      if (!a.pinned && b.pinned) return 1
+      return (b.updatedAt || '').localeCompare(a.updatedAt || '')
+    })
+  }, [books])
+
   return (
     <div className="screen home-screen">
       <div className="home-actions">
@@ -29,14 +39,22 @@ export default function HomeScreen({ books, navigate, deleteBook }) {
       ) : (
         <div className="books-list">
           <h2 className="section-title">הספרים שלי</h2>
-          {books.map(book => (
-            <SwipeableCard key={book.id} onDelete={() => deleteBook(book.id)}>
+          {sortedBooks.map(book => (
+            <SwipeableCard
+              key={book.id}
+              onDelete={() => deleteBook(book.id)}
+              onPin={() => togglePin(book.id)}
+              isPinned={!!book.pinned}
+            >
               <button
                 className="book-card"
                 onClick={() => navigate(SCREENS.READER, { bookId: book.id })}
               >
                 <div className="book-info">
-                  <h3 className="book-name">{book.name}</h3>
+                  <h3 className="book-name">
+                    {book.pinned && <span className="pin-icon">📌 </span>}
+                    {book.name}
+                  </h3>
                   <p className="book-meta">
                     {book.totalPages > 0
                       ? `עמוד ${book.currentPageIndex + 1} מתוך ${book.totalPages}`
