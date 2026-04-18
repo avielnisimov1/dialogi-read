@@ -197,6 +197,13 @@
   margin-bottom: var(--spacing-md);
 }
 
+.popup-pronunciation {
+  font-size: 16px;
+  color: var(--color-text-secondary);
+  direction: rtl;
+  margin-bottom: var(--spacing-sm);
+}
+
 .popup-hebrew {
   font-size: 28px;
   font-weight: 600;

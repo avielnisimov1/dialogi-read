@@ -77,6 +77,7 @@ export async function getWordDetail(word, sentence = '') {
     const data = await res.json()
     const result = {
       hebrew: data.hebrew || '',
+      pronunciation: data.pronunciation || '',
       explanation: data.explanation || '',
       example: data.example || null,
     }

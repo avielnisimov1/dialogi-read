@@ -83,6 +83,7 @@ export default async function handler(req, res) {
 תן תשובה קצרה בפורמט JSON בלבד (בלי markdown, בלי backticks):
 {
   "hebrew": "תרגום המילה לעברית",
+  "pronunciation": "המילה באנגלית כתובה באותיות עבריות עם ניקוד מלא כדי לדעת בדיוק איך להגות אותה. לדוגמה: beautiful = בְּיוּטִיפוּל, through = תְּרוּ, knowledge = נוֹלֶג׳",
   "explanation": "משפט אחד בעברית שמסביר את המילה בהקשר הזה",
   "example": {"en": "משפט לדוגמה קצר באנגלית", "he": "תרגום לעברית"}
 }`
@@ -132,11 +133,12 @@ export default async function handler(req, res) {
         const parsed = JSON.parse(cleaned)
         return res.status(200).json({
           hebrew: parsed.hebrew || '',
+          pronunciation: parsed.pronunciation || '',
           explanation: parsed.explanation || '',
           example: parsed.example || null,
         })
       } catch {
-        return res.status(200).json({ hebrew: text, explanation: '', example: null })
+        return res.status(200).json({ hebrew: text, pronunciation: '', explanation: '', example: null })
       }
     }
 

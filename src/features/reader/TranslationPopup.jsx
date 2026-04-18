@@ -123,6 +123,9 @@ export function DetailPopup({ word, sentence, onClose }) {
         {!loading && !error && detail && (
           <div className="popup-word-result">
             <div className="popup-english-word">{word}</div>
+            {detail.pronunciation && (
+              <div className="popup-pronunciation">{detail.pronunciation}</div>
+            )}
             <div className="popup-hebrew">{detail.hebrew}</div>
 
             {detail.explanation && (
