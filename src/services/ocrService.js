@@ -1,41 +1,42 @@
-import { createWorker } from 'tesseract.js'
-
-let worker = null
-let terminateTimer = null
-const AUTO_TERMINATE_MS = 60_000 // 1 minute after last use
-
-async function getWorker(onProgress) {
-  clearTimeout(terminateTimer)
-
-  if (worker) return worker
-
-  worker = await createWorker('eng', 1, {
-    logger: (m) => {
-      if (m.status === 'recognizing text' && onProgress) {
-        onProgress(Math.round(m.progress * 100))
-      }
-    },
+/**
+ * Convert image file to base64 data URL.
+ */
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result)
+    reader.onerror = reject
+    reader.readAsDataURL(file)
   })
-
-  return worker
-}
-
-function scheduleTerminate() {
-  clearTimeout(terminateTimer)
-  terminateTimer = setTimeout(async () => {
-    if (worker) {
-      await worker.terminate()
-      worker = null
-    }
-  }, AUTO_TERMINATE_MS)
 }
 
 /**
- * Extract text from an image file.
+ * Extract text from an image using Gemini Vision API.
+ * Intelligently filters out page numbers, headers, footers, and irrelevant text.
  */
 export async function extractTextFromImage(imageFile, onProgress) {
-  const w = await getWorker(onProgress)
-  const { data: { text } } = await w.recognize(imageFile)
-  scheduleTerminate()
-  return text.trim()
+  // Show initial progress
+  if (onProgress) onProgress(10)
+
+  const base64 = await fileToBase64(imageFile)
+
+  if (onProgress) onProgress(30)
+
+  const res = await fetch('/api/ocr', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ image: base64 }),
+  })
+
+  if (onProgress) onProgress(90)
+
+  if (!res.ok) {
+    throw new Error('OCR failed')
+  }
+
+  const data = await res.json()
+
+  if (onProgress) onProgress(100)
+
+  return (data.text || '').trim()
 }
