@@ -12,6 +12,8 @@
   margin: 0 auto;
   touch-action: manipulation;
   overscroll-behavior-y: contain;
+  overflow-wrap: break-word;
+  word-break: normal;
 }
 
 .reader-paragraph {
@@ -30,12 +32,10 @@
   transition: background-color 0.15s;
   -webkit-tap-highlight-color: transparent;
   display: inline;
-  white-space: nowrap;
 }
 
 .word-token-punct {
   display: inline;
-  white-space: nowrap;
 }
 
 .word-token:active {
