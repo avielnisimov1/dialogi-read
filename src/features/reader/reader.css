@@ -214,6 +214,18 @@
   text-align: center;
 }
 
+.popup-explanation {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  direction: rtl;
+  text-align: center;
+  margin-top: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--color-primary-light);
+  border-radius: var(--radius-sm);
+}
+
 /* Sentence section in full popup */
 .popup-sentence-section {
   margin-top: var(--spacing-md);

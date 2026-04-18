@@ -3,7 +3,7 @@ import { translateWord, translateSentence } from '../../services/translationServ
 import './reader.css'
 
 // Light bubble — just the Hebrew translation
-export function BubblePopup({ word, position, onClose }) {
+export function BubblePopup({ word, sentence, position, onClose }) {
   const [hebrew, setHebrew] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
@@ -14,7 +14,7 @@ export function BubblePopup({ word, position, onClose }) {
     setLoading(true)
     setError(false)
 
-    translateWord(word).then(result => {
+    translateWord(word, sentence).then(result => {
       if (cancelled) return
       setHebrew(result?.hebrew || '')
       setLoading(false)
@@ -25,9 +25,8 @@ export function BubblePopup({ word, position, onClose }) {
     })
 
     return () => { cancelled = true }
-  }, [word])
+  }, [word, sentence])
 
-  // Position bubble above the tapped word, or below if no room
   const style = {}
   if (position) {
     const bubbleHeight = 50
@@ -60,7 +59,7 @@ export function BubblePopup({ word, position, onClose }) {
   )
 }
 
-// Full popup — word + sentence translation + definitions
+// Full popup — word + explanation + sentence translation
 export function FullPopup({ word, sentence, onClose }) {
   const [wordResult, setWordResult] = useState(null)
   const [sentenceHebrew, setSentenceHebrew] = useState(null)
@@ -73,7 +72,7 @@ export function FullPopup({ word, sentence, onClose }) {
     setError(false)
 
     Promise.allSettled([
-      translateWord(word),
+      translateWord(word, sentence),
       translateSentence(sentence),
     ]).then(([wordRes, sentenceRes]) => {
       if (cancelled) return
@@ -110,18 +109,9 @@ export function FullPopup({ word, sentence, onClose }) {
         {!loading && !error && wordResult && (
           <div className="popup-word-result">
             <div className="popup-english-word">{word}</div>
-            {wordResult.phonetic && (
-              <div className="popup-phonetic">{wordResult.phonetic}</div>
-            )}
             <div className="popup-hebrew">{wordResult.hebrew}</div>
-            {wordResult.partOfSpeech && (
-              <div className="popup-pos">{wordResult.partOfSpeech}</div>
-            )}
-            {wordResult.definition && (
-              <div className="popup-definition">{wordResult.definition}</div>
-            )}
-            {wordResult.example && (
-              <div className="popup-example">"{wordResult.example}"</div>
+            {wordResult.explanation && (
+              <div className="popup-explanation">{wordResult.explanation}</div>
             )}
 
             {sentenceHebrew && (
@@ -138,10 +128,9 @@ export function FullPopup({ word, sentence, onClose }) {
   )
 }
 
-// Keep default export for backwards compat
 export default function TranslationPopup({ word, sentence, mode, position, onClose }) {
   if (mode === 'word') {
-    return <BubblePopup word={word} position={position} onClose={onClose} />
+    return <BubblePopup word={word} sentence={sentence} position={position} onClose={onClose} />
   }
   return <FullPopup word={word} sentence={sentence} onClose={onClose} />
 }
