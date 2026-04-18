@@ -18,7 +18,8 @@ function checkRateLimit(ip) {
 
 function sanitize(str, maxLength) {
   if (!str || typeof str !== 'string') return ''
-  return str.slice(0, maxLength).replace(/[^\w\s.,!?;:'"()\-–—\u0590-\u05FF]/g, ' ').trim()
+  // Keep all printable characters, Hebrew, and common punctuation — only strip control chars
+  return str.slice(0, maxLength).replace(/[\x00-\x1F\x7F]/g, '').trim()
 }
 
 export default async function handler(req, res) {
