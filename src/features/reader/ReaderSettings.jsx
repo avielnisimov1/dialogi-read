@@ -13,6 +13,7 @@ const TEXT_COLORS = [
   { label: 'dark', value: '#1A1A1A' },
   { label: 'soft', value: '#333333' },
   { label: 'brown', value: '#3E2723' },
+  { label: 'light', value: '#E0E0E0' },
 ]
 
 const BG_COLORS = [
@@ -22,6 +23,13 @@ const BG_COLORS = [
   { label: 'sepia', value: '#F5E6CA' },
   { label: 'dark', value: '#1A1A1A' },
 ]
+
+// Auto-pick text color when background changes
+function getAutoTextColor(bgColor) {
+  const darkBgs = ['#1A1A1A']
+  if (darkBgs.includes(bgColor)) return '#E0E0E0'
+  return '#1A1A1A'
+}
 
 const DEFAULT_SETTINGS = {
   fontSize: 20,
@@ -42,7 +50,14 @@ export function useReaderSettings() {
   }, [settings])
 
   const update = (key, value) => {
-    setSettings(prev => ({ ...prev, [key]: value }))
+    setSettings(prev => {
+      const next = { ...prev, [key]: value }
+      // Auto-adjust text color when bg changes
+      if (key === 'bgColor') {
+        next.textColor = getAutoTextColor(value)
+      }
+      return next
+    })
   }
 
   const cssVars = {

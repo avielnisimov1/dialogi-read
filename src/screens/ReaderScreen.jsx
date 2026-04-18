@@ -12,6 +12,7 @@ export default function ReaderScreen({
   getBook,
   updateBook,
   navigate,
+  onSettingsButton,
 }) {
   const isQuickRead = !bookId
 
@@ -31,6 +32,11 @@ export default function ReaderScreen({
   const [showSettings, setShowSettings] = useState(false)
 
   const { settings, update: updateSetting, cssVars } = useReaderSettings()
+
+  // Expose settings toggle via callback for Header rightAction
+  if (onSettingsButton) {
+    onSettingsButton(() => setShowSettings(true))
+  }
 
   const handleWordTap = useCallback((word, sentence, position) => {
     setSelectedWord(word)
@@ -81,13 +87,6 @@ export default function ReaderScreen({
       className="reader-screen"
       style={{ backgroundColor: settings.bgColor }}
     >
-      <button
-        className="settings-toggle"
-        onClick={() => setShowSettings(true)}
-      >
-        Aa
-      </button>
-
       <div
         className="reader-content"
         onClick={popupMode ? handleClosePopup : undefined}
@@ -108,7 +107,7 @@ export default function ReaderScreen({
             onClick={() => goToPage(currentPageIndex - 1)}
             disabled={currentPageIndex === 0}
           >
-            → הקודם
+            הקודם
           </button>
           <span className="page-indicator">
             {currentPageIndex + 1} / {pages.length}
@@ -118,7 +117,7 @@ export default function ReaderScreen({
             onClick={() => goToPage(currentPageIndex + 1)}
             disabled={currentPageIndex >= pages.length - 1}
           >
-            הבא ←
+            הבא
           </button>
         </div>
       )}

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { useNavigation } from './hooks/useNavigation'
 import { useBooks } from './hooks/useBooks'
 import { initStorage } from './services/storageService'
@@ -15,6 +15,7 @@ function App() {
   const { screen, params, navigate, goBack, goHome } = useNavigation()
   const bookOps = useBooks()
   const [quickReadText, setQuickReadText] = useState('')
+  const settingsToggleRef = useRef(null)
 
   const handleQuickRead = useCallback((text) => {
     setQuickReadText(text)
@@ -37,6 +38,16 @@ function App() {
   }
 
   const showBack = screen !== SCREENS.HOME
+  const isReader = screen === SCREENS.READER
+
+  const settingsButton = isReader ? (
+    <button
+      className="header-settings-btn"
+      onClick={() => settingsToggleRef.current?.()}
+    >
+      Aa
+    </button>
+  ) : null
 
   return (
     <>
@@ -44,6 +55,7 @@ function App() {
         title={getTitle()}
         showBack={showBack}
         onBack={goBack}
+        rightAction={settingsButton}
       />
 
       {screen === SCREENS.HOME && (
@@ -78,7 +90,7 @@ function App() {
         />
       )}
 
-      {screen === SCREENS.READER && (
+      {isReader && (
         <ReaderScreen
           bookId={params.quickRead ? null : params.bookId}
           quickReadText={params.quickRead ? quickReadText : null}
@@ -86,6 +98,7 @@ function App() {
           getBook={bookOps.getBook}
           updateBook={bookOps.updateBook}
           navigate={navigate}
+          onSettingsButton={(fn) => { settingsToggleRef.current = fn }}
         />
       )}
     </>

@@ -1,8 +1,12 @@
 import { createWorker } from 'tesseract.js'
 
 let worker = null
+let terminateTimer = null
+const AUTO_TERMINATE_MS = 60_000 // 1 minute after last use
 
 async function getWorker(onProgress) {
+  clearTimeout(terminateTimer)
+
   if (worker) return worker
 
   worker = await createWorker('eng', 1, {
@@ -16,14 +20,22 @@ async function getWorker(onProgress) {
   return worker
 }
 
+function scheduleTerminate() {
+  clearTimeout(terminateTimer)
+  terminateTimer = setTimeout(async () => {
+    if (worker) {
+      await worker.terminate()
+      worker = null
+    }
+  }, AUTO_TERMINATE_MS)
+}
+
 /**
  * Extract text from an image file.
- * @param {File} imageFile - The image file to process
- * @param {function} onProgress - Progress callback (0-100)
- * @returns {string} Extracted text
  */
 export async function extractTextFromImage(imageFile, onProgress) {
   const w = await getWorker(onProgress)
   const { data: { text } } = await w.recognize(imageFile)
+  scheduleTerminate()
   return text.trim()
 }

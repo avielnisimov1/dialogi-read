@@ -57,7 +57,6 @@
   position: absolute;
   bottom: -6px;
   left: 50%;
-  transform: translateX(-50%);
   width: 12px;
   height: 12px;
   background: #333;
@@ -68,6 +67,7 @@
 .bubble-popup.bubble-below::after {
   top: -6px;
   bottom: auto;
+  transform: translateX(-50%) rotate(45deg);
 }
 
 @keyframes bubblePop {
@@ -257,24 +257,6 @@
   direction: rtl;
   font-weight: 500;
   text-align: center;
-}
-
-/* ========== SETTINGS ========== */
-.settings-toggle {
-  position: fixed;
-  top: var(--spacing-md);
-  left: var(--spacing-md);
-  z-index: 50;
-  background: var(--color-bg-card);
-  border: 1px solid var(--color-border);
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  box-shadow: var(--shadow-sm);
 }
 
 .settings-panel {

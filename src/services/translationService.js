@@ -1,20 +1,31 @@
 import { getItem, setItem } from './storageService'
 import { STORAGE_KEYS } from '../utils/constants'
 
+const MAX_CACHE_ENTRIES = 500
+
 function getCache() {
   return getItem(STORAGE_KEYS.TRANSLATIONS) || {}
 }
 
+function pruneCache(cache) {
+  const entries = Object.entries(cache)
+  if (entries.length <= MAX_CACHE_ENTRIES) return cache
+
+  // Sort by cachedAt ascending (oldest first), remove oldest
+  entries.sort((a, b) => (a[1].cachedAt || '').localeCompare(b[1].cachedAt || ''))
+  const toRemove = entries.length - MAX_CACHE_ENTRIES
+  const pruned = Object.fromEntries(entries.slice(toRemove))
+  return pruned
+}
+
 function cacheWord(word, sentence, result) {
   const cache = getCache()
-  // Cache key includes sentence for context-aware caching
   const key = `${word.toLowerCase()}__${sentence.slice(0, 50)}`
   cache[key] = { ...result, cachedAt: new Date().toISOString() }
-  // Also cache the simple word for quick lookups
   if (!cache[word.toLowerCase()]) {
     cache[word.toLowerCase()] = { ...result, cachedAt: new Date().toISOString() }
   }
-  setItem(STORAGE_KEYS.TRANSLATIONS, cache)
+  setItem(STORAGE_KEYS.TRANSLATIONS, pruneCache(cache))
 }
 
 /**
@@ -24,7 +35,6 @@ export async function translateWord(word, sentence = '') {
   const clean = word.toLowerCase().trim()
   if (!clean) return null
 
-  // Check cache (context-aware first, then simple)
   const cache = getCache()
   const contextKey = `${clean}__${sentence.slice(0, 50)}`
   if (cache[contextKey]) return cache[contextKey]

@@ -25,19 +25,3 @@ export function splitToWords(sentence) {
     })
 }
 
-/**
- * Finds which sentence a word belongs to in the full text.
- */
-export function findSentenceForWord(text, wordIndex) {
-  const sentences = splitToSentences(text)
-  let count = 0
-  for (const sentence of sentences) {
-    const words = splitToWords(sentence)
-    const wordCount = words.filter(w => w.isWord).length
-    if (wordIndex < count + wordCount) {
-      return sentence
-    }
-    count += wordCount
-  }
-  return sentences[sentences.length - 1] || ''
-}

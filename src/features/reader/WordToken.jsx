@@ -3,6 +3,7 @@ import { useRef, useCallback } from 'react'
 export default function WordToken({ display, word, isWord, highlighted, onTap, onLongPress }) {
   const timerRef = useRef(null)
   const pressedRef = useRef(false)
+  const handledByTouchRef = useRef(false)
 
   const getPosition = (el) => {
     const rect = el.getBoundingClientRect()
@@ -15,6 +16,7 @@ export default function WordToken({ display, word, isWord, highlighted, onTap, o
 
   const handleTouchStart = useCallback((e) => {
     if (!isWord) return
+    handledByTouchRef.current = true
     pressedRef.current = false
     timerRef.current = setTimeout(() => {
       pressedRef.current = true
@@ -37,6 +39,18 @@ export default function WordToken({ display, word, isWord, highlighted, onTap, o
     clearTimeout(timerRef.current)
   }, [])
 
+  const handleClick = useCallback((e) => {
+    // Skip if already handled by touch events (mobile)
+    if (handledByTouchRef.current) {
+      handledByTouchRef.current = false
+      return
+    }
+    // Desktop fallback
+    e.stopPropagation()
+    const pos = getPosition(e.target)
+    onTap(word, pos)
+  }, [word, onTap])
+
   if (!isWord) {
     return <span>{display}</span>
   }
@@ -47,11 +61,7 @@ export default function WordToken({ display, word, isWord, highlighted, onTap, o
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       onTouchMove={handleTouchMove}
-      onClick={(e) => {
-        e.stopPropagation()
-        const pos = getPosition(e.target)
-        onTap(word, pos)
-      }}
+      onClick={handleClick}
     >
       {display}
     </span>

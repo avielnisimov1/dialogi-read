@@ -1,37 +1,53 @@
-import { useState, useCallback } from 'react'
+import { useReducer, useCallback } from 'react'
 import { SCREENS } from '../utils/constants'
 
-export function useNavigation() {
-  const [screen, setScreen] = useState(SCREENS.HOME)
-  const [params, setParams] = useState({})
-  const [history, setHistory] = useState([])
+const initialState = {
+  screen: SCREENS.HOME,
+  params: {},
+  history: [],
+}
 
-  const navigate = useCallback((newScreen, newParams = {}) => {
-    setHistory(prev => [...prev, { screen, params }])
-    setScreen(newScreen)
-    setParams(newParams)
-  }, [screen, params])
+function reducer(state, action) {
+  switch (action.type) {
+    case 'NAVIGATE':
+      return {
+        screen: action.screen,
+        params: action.params,
+        history: [...state.history, { screen: state.screen, params: state.params }],
+      }
+    case 'GO_BACK': {
+      if (state.history.length === 0) {
+        return { ...initialState }
+      }
+      const newHistory = state.history.slice(0, -1)
+      const last = state.history[state.history.length - 1]
+      return {
+        screen: last.screen,
+        params: last.params,
+        history: newHistory,
+      }
+    }
+    case 'GO_HOME':
+      return { ...initialState }
+    default:
+      return state
+  }
+}
+
+export function useNavigation() {
+  const [state, dispatch] = useReducer(reducer, initialState)
+
+  const navigate = useCallback((screen, params = {}) => {
+    dispatch({ type: 'NAVIGATE', screen, params })
+  }, [])
 
   const goBack = useCallback(() => {
-    setHistory(prev => {
-      if (prev.length === 0) {
-        setScreen(SCREENS.HOME)
-        setParams({})
-        return prev
-      }
-      const newHistory = [...prev]
-      const last = newHistory.pop()
-      setScreen(last.screen)
-      setParams(last.params)
-      return newHistory
-    })
+    dispatch({ type: 'GO_BACK' })
   }, [])
 
   const goHome = useCallback(() => {
-    setHistory([])
-    setScreen(SCREENS.HOME)
-    setParams({})
+    dispatch({ type: 'GO_HOME' })
   }, [])
 
-  return { screen, params, navigate, goBack, goHome }
+  return { screen: state.screen, params: state.params, navigate, goBack, goHome }
 }

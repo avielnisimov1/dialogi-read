@@ -1,6 +1,35 @@
+// Simple in-memory rate limiting (per serverless instance)
+const rateLimitMap = new Map()
+const RATE_LIMIT_WINDOW = 60_000 // 1 minute
+const RATE_LIMIT_MAX = 30 // max requests per minute per IP
+
+function checkRateLimit(ip) {
+  const now = Date.now()
+  const entry = rateLimitMap.get(ip)
+
+  if (!entry || now - entry.start > RATE_LIMIT_WINDOW) {
+    rateLimitMap.set(ip, { start: now, count: 1 })
+    return true
+  }
+
+  entry.count++
+  return entry.count <= RATE_LIMIT_MAX
+}
+
+function sanitize(str, maxLength) {
+  if (!str || typeof str !== 'string') return ''
+  return str.slice(0, maxLength).replace(/[^\w\s.,!?;:'"()\-–—\u0590-\u05FF]/g, ' ').trim()
+}
+
 export default async function handler(req, res) {
-  // CORS
-  res.setHeader('Access-Control-Allow-Origin', '*')
+  const allowedOrigins = [
+    'https://dialogi-read.vercel.app',
+    'https://dialogi-read-aviels-projects-e11f879d.vercel.app',
+  ]
+  const origin = req.headers.origin
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin)
+  }
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
 
@@ -10,6 +39,12 @@ export default async function handler(req, res) {
 
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
+  }
+
+  // Rate limiting
+  const ip = req.headers['x-forwarded-for']?.split(',')[0] || 'unknown'
+  if (!checkRateLimit(ip)) {
+    return res.status(429).json({ error: 'Too many requests, try again later' })
   }
 
   const { word, sentence, mode } = req.body
@@ -23,19 +58,23 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'API key not configured' })
   }
 
+  // Sanitize inputs
+  const cleanWord = sanitize(word, 100)
+  const cleanSentence = sanitize(sentence, 500)
+
   let prompt
 
   if (mode === 'sentence') {
     prompt = `תרגם את המשפט הבא לעברית. תן רק את התרגום, בלי הסברים.
 
-משפט: "${sentence}"
+משפט: "${cleanSentence}"
 
 תרגום:`
   } else {
     prompt = `אתה מתרגם מילים מאנגלית לעברית עבור קורא שלומד אנגלית.
 
-המילה: "${word}"
-המשפט שבו המילה מופיעה: "${sentence}"
+המילה: "${cleanWord}"
+המשפט שבו המילה מופיעה: "${cleanSentence}"
 
 תן תשובה בפורמט JSON בלבד (בלי markdown, בלי backticks):
 {"hebrew":"התרגום לעברית של המילה בהקשר הזה","explanation":"הסבר קצר בעברית למה זה התרגום הנכון בהקשר הזה, משפט אחד"}`
@@ -43,10 +82,13 @@ export default async function handler(req, res) {
 
   try {
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': apiKey,
+        },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: {
@@ -72,7 +114,6 @@ export default async function handler(req, res) {
 
     // Parse JSON response for word translation
     try {
-      // Clean potential markdown wrapping
       const cleaned = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim()
       const parsed = JSON.parse(cleaned)
       return res.status(200).json({
@@ -80,7 +121,6 @@ export default async function handler(req, res) {
         explanation: parsed.explanation || '',
       })
     } catch {
-      // If JSON parsing fails, use raw text as hebrew
       return res.status(200).json({ hebrew: text, explanation: '' })
     }
   } catch (err) {

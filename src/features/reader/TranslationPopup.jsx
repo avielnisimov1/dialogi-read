@@ -27,10 +27,11 @@ export function BubblePopup({ word, sentence, position, onClose }) {
     return () => { cancelled = true }
   }, [word, sentence])
 
+  const bubbleHeight = 50
+  const showBelow = position ? position.top < bubbleHeight + 10 : false
+
   const style = {}
   if (position) {
-    const bubbleHeight = 50
-    const showBelow = position.top < bubbleHeight + 10
     style.left = Math.min(Math.max(position.left, 60), window.innerWidth - 60)
     style.transform = 'translateX(-50%)'
 
@@ -40,8 +41,6 @@ export function BubblePopup({ word, sentence, position, onClose }) {
       style.top = position.top - bubbleHeight - 8
     }
   }
-
-  const showBelow = position && position.top < 60
 
   return (
     <>
@@ -78,10 +77,10 @@ export function FullPopup({ word, sentence, onClose }) {
       if (cancelled) return
       if (wordRes.status === 'fulfilled') setWordResult(wordRes.value)
       if (sentenceRes.status === 'fulfilled') setSentenceHebrew(sentenceRes.value)
-      setLoading(false)
-    }).catch(() => {
-      if (cancelled) return
-      setError(true)
+      // If both failed, show error
+      if (wordRes.status === 'rejected' && sentenceRes.status === 'rejected') {
+        setError(true)
+      }
       setLoading(false)
     })
 

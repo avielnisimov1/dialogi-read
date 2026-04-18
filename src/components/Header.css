@@ -27,3 +27,12 @@
   padding: var(--spacing-xs);
   color: var(--color-primary);
 }
+
+.header-settings-btn {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-primary);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+}
