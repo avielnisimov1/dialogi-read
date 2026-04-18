@@ -29,18 +29,6 @@
   object-fit: contain;
 }
 
-.header-logo-text {
-  height: 22px;
-  object-fit: contain;
-}
-
-.header-read {
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--color-primary);
-  margin-right: -2px;
-}
-
 .header-title {
   font-size: 20px;
   font-weight: 600;

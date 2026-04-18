@@ -14,8 +14,7 @@ export default function Header({ title, showBack, onBack, rightAction }) {
         {isHome ? (
           <div className="header-brand">
             <img src="/icon.png" alt="" className="header-icon" />
-            <img src="/logo-text.png" alt="Dialogi" className="header-logo-text" />
-            <span className="header-read">Read</span>
+            <h1 className="header-title">Dialogi Read</h1>
           </div>
         ) : (
           <h1 className="header-title">{title}</h1>
