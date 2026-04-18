@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react'
 import { SCREENS } from '../utils/constants'
 import TextRenderer from '../features/reader/TextRenderer'
 import TranslationPopup from '../features/reader/TranslationPopup'
+import ReaderSettings, { useReaderSettings } from '../features/reader/ReaderSettings'
 import './ReaderScreen.css'
 
 export default function ReaderScreen({
@@ -24,15 +25,23 @@ export default function ReaderScreen({
 
   const [selectedWord, setSelectedWord] = useState(null)
   const [selectedSentence, setSelectedSentence] = useState(null)
-  const [popupMode, setPopupMode] = useState(null) // 'word' | 'sentence'
+  const [highlightedSentence, setHighlightedSentence] = useState(null)
+  const [popupMode, setPopupMode] = useState(null)
+  const [wordPosition, setWordPosition] = useState(null)
+  const [showSettings, setShowSettings] = useState(false)
 
-  const handleWordTap = useCallback((word, sentence) => {
+  const { settings, update: updateSetting, cssVars } = useReaderSettings()
+
+  const handleWordTap = useCallback((word, sentence, position) => {
     setSelectedWord(word)
     setSelectedSentence(sentence)
+    setWordPosition(position)
+    setHighlightedSentence(null)
     setPopupMode('word')
   }, [])
 
   const handleLongPress = useCallback((word, sentence) => {
+    setHighlightedSentence(sentence)
     setSelectedWord(word)
     setSelectedSentence(sentence)
     setPopupMode('sentence')
@@ -41,7 +50,9 @@ export default function ReaderScreen({
   const handleClosePopup = useCallback(() => {
     setSelectedWord(null)
     setSelectedSentence(null)
+    setHighlightedSentence(null)
     setPopupMode(null)
+    setWordPosition(null)
   }, [])
 
   const goToPage = useCallback((index) => {
@@ -66,10 +77,25 @@ export default function ReaderScreen({
   }
 
   return (
-    <div className="reader-screen">
-      <div className="reader-content" onClick={popupMode ? handleClosePopup : undefined}>
+    <div
+      className="reader-screen"
+      style={{ backgroundColor: settings.bgColor }}
+    >
+      <button
+        className="settings-toggle"
+        onClick={() => setShowSettings(true)}
+      >
+        Aa
+      </button>
+
+      <div
+        className="reader-content"
+        onClick={popupMode ? handleClosePopup : undefined}
+      >
         <TextRenderer
           text={currentText}
+          highlightedSentence={highlightedSentence}
+          style={cssVars}
           onWordTap={handleWordTap}
           onLongPress={handleLongPress}
         />
@@ -111,7 +137,16 @@ export default function ReaderScreen({
           word={selectedWord}
           sentence={selectedSentence}
           mode={popupMode}
+          position={wordPosition}
           onClose={handleClosePopup}
+        />
+      )}
+
+      {showSettings && (
+        <ReaderSettings
+          settings={settings}
+          onUpdate={updateSetting}
+          onClose={() => setShowSettings(false)}
         />
       )}
     </div>

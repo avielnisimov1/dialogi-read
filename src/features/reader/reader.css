@@ -1,28 +1,96 @@
 .text-renderer {
-  font-family: var(--font-english);
-  font-size: 20px;
-  line-height: 1.8;
-  color: var(--color-text);
+  font-family: var(--reader-font, 'Georgia', serif);
+  font-size: var(--reader-font-size, 20px);
+  line-height: var(--reader-line-height, 2);
+  color: var(--reader-color, #1A1A1A);
   text-align: left;
-  word-spacing: 2px;
+  word-spacing: 3px;
+  letter-spacing: 0.3px;
   user-select: none;
   -webkit-user-select: none;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+  max-width: 100%;
 }
 
 .word-token {
   cursor: pointer;
-  border-radius: 3px;
-  padding: 1px 2px;
-  margin: 0 1px;
+  border-radius: 4px;
+  padding: 2px 1px;
   transition: background-color 0.15s;
   -webkit-tap-highlight-color: transparent;
+  display: inline;
 }
 
 .word-token:active {
   background-color: var(--color-highlight);
 }
 
-/* Popup overlay */
+.word-token.highlighted {
+  background-color: var(--color-highlight);
+}
+
+/* ========== BUBBLE POPUP (word tap) ========== */
+.bubble-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+}
+
+.bubble-popup {
+  position: fixed;
+  z-index: 101;
+  background: #333;
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  animation: bubblePop 0.15s ease-out;
+  max-width: 200px;
+  text-align: center;
+  direction: rtl;
+}
+
+.bubble-popup::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px;
+  height: 12px;
+  background: #333;
+  border-radius: 2px;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.bubble-popup.bubble-below::after {
+  top: -6px;
+  bottom: auto;
+}
+
+@keyframes bubblePop {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.bubble-hebrew {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.bubble-loading {
+  font-size: 14px;
+  color: #ccc;
+}
+
+.bubble-error {
+  font-size: 13px;
+  color: #ff9999;
+}
+
+/* ========== FULL POPUP (long press) ========== */
 .popup-overlay {
   position: fixed;
   inset: 0;
@@ -45,7 +113,7 @@
   width: 100%;
   max-width: 600px;
   padding: var(--spacing-md) var(--spacing-lg) var(--spacing-xl);
-  min-height: 180px;
+  min-height: 160px;
   animation: slideUp 0.2s ease-out;
 }
 
@@ -85,14 +153,13 @@
   to { transform: rotate(360deg); }
 }
 
-/* Error */
 .popup-error {
   text-align: center;
   padding: var(--spacing-lg) 0;
   color: var(--color-danger);
 }
 
-/* Word result */
+/* Word detail in full popup */
 .popup-word-result {
   text-align: center;
 }
@@ -147,30 +214,162 @@
   text-align: center;
 }
 
-/* Sentence result */
-.popup-sentence-result {
+/* Sentence section in full popup */
+.popup-sentence-section {
+  margin-top: var(--spacing-md);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--color-border);
+}
+
+.popup-sentence-label {
+  font-size: 12px;
+  color: var(--color-text-light);
+  margin-bottom: var(--spacing-sm);
   text-align: center;
 }
 
 .popup-sentence-en {
   font-family: var(--font-english);
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.6;
   color: var(--color-text);
-  margin-bottom: var(--spacing-md);
-}
-
-.popup-sentence-divider {
-  width: 60px;
-  height: 1px;
-  background: var(--color-border);
-  margin: 0 auto var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
+  text-align: center;
+  direction: ltr;
 }
 
 .popup-sentence-he {
-  font-size: 18px;
+  font-size: 16px;
   line-height: 1.6;
   color: var(--color-primary);
   direction: rtl;
   font-weight: 500;
+  text-align: center;
+}
+
+/* ========== SETTINGS ========== */
+.settings-toggle {
+  position: fixed;
+  top: var(--spacing-md);
+  left: var(--spacing-md);
+  z-index: 50;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  box-shadow: var(--shadow-sm);
+}
+
+.settings-panel {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--color-bg-card);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: var(--spacing-md) var(--spacing-lg) var(--spacing-xl);
+  z-index: 200;
+  box-shadow: var(--shadow-lg);
+  animation: slideUp 0.2s ease-out;
+  direction: rtl;
+}
+
+.settings-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--color-bg-overlay);
+  z-index: 199;
+}
+
+.settings-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: var(--spacing-md);
+  text-align: center;
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.setting-row:last-child {
+  border-bottom: none;
+}
+
+.setting-label {
+  font-size: 14px;
+  color: var(--color-text);
+}
+
+.setting-control {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.setting-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.setting-value {
+  font-size: 14px;
+  min-width: 30px;
+  text-align: center;
+}
+
+.font-option {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text);
+}
+
+.font-option.active {
+  background: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+}
+
+.color-option {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+}
+
+.color-option.active {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px white, 0 0 0 4px var(--color-primary);
+}
+
+.bg-option {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border);
+}
+
+.bg-option.active {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px white, 0 0 0 4px var(--color-primary);
 }

@@ -1,8 +1,17 @@
 import { useRef, useCallback } from 'react'
 
-export default function WordToken({ display, word, isWord, onTap, onLongPress }) {
+export default function WordToken({ display, word, isWord, highlighted, onTap, onLongPress }) {
   const timerRef = useRef(null)
   const pressedRef = useRef(false)
+
+  const getPosition = (el) => {
+    const rect = el.getBoundingClientRect()
+    return {
+      top: rect.top,
+      bottom: rect.bottom,
+      left: rect.left + rect.width / 2,
+    }
+  }
 
   const handleTouchStart = useCallback((e) => {
     if (!isWord) return
@@ -10,7 +19,6 @@ export default function WordToken({ display, word, isWord, onTap, onLongPress })
     timerRef.current = setTimeout(() => {
       pressedRef.current = true
       onLongPress(word)
-      // Prevent text selection
       e.preventDefault()
     }, 500)
   }, [isWord, word, onLongPress])
@@ -19,7 +27,8 @@ export default function WordToken({ display, word, isWord, onTap, onLongPress })
     if (!isWord) return
     clearTimeout(timerRef.current)
     if (!pressedRef.current) {
-      onTap(word)
+      const pos = getPosition(e.target)
+      onTap(word, pos)
     }
     e.preventDefault()
   }, [isWord, word, onTap])
@@ -34,14 +43,14 @@ export default function WordToken({ display, word, isWord, onTap, onLongPress })
 
   return (
     <span
-      className="word-token"
+      className={`word-token ${highlighted ? 'highlighted' : ''}`}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       onTouchMove={handleTouchMove}
       onClick={(e) => {
-        // Fallback for desktop
         e.stopPropagation()
-        onTap(word)
+        const pos = getPosition(e.target)
+        onTap(word, pos)
       }}
     >
       {display}

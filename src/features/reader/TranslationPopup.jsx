@@ -1,44 +1,93 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { translateWord, translateSentence } from '../../services/translationService'
 import './reader.css'
 
-export default function TranslationPopup({ word, sentence, mode, onClose }) {
+// Light bubble — just the Hebrew translation
+export function BubblePopup({ word, position, onClose }) {
+  const [hebrew, setHebrew] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [result, setResult] = useState(null)
+  const [error, setError] = useState(false)
+  const bubbleRef = useRef(null)
+
+  useEffect(() => {
+    let cancelled = false
+    setLoading(true)
+    setError(false)
+
+    translateWord(word).then(result => {
+      if (cancelled) return
+      setHebrew(result?.hebrew || '')
+      setLoading(false)
+    }).catch(() => {
+      if (cancelled) return
+      setError(true)
+      setLoading(false)
+    })
+
+    return () => { cancelled = true }
+  }, [word])
+
+  // Position bubble above the tapped word, or below if no room
+  const style = {}
+  if (position) {
+    const bubbleHeight = 50
+    const showBelow = position.top < bubbleHeight + 10
+    style.left = Math.min(Math.max(position.left, 60), window.innerWidth - 60)
+    style.transform = 'translateX(-50%)'
+
+    if (showBelow) {
+      style.top = position.bottom + 8
+    } else {
+      style.top = position.top - bubbleHeight - 8
+    }
+  }
+
+  const showBelow = position && position.top < 60
+
+  return (
+    <>
+      <div className="bubble-backdrop" onClick={onClose} />
+      <div
+        ref={bubbleRef}
+        className={`bubble-popup ${showBelow ? 'bubble-below' : ''}`}
+        style={style}
+      >
+        {loading && <span className="bubble-loading">...</span>}
+        {error && <span className="bubble-error">?</span>}
+        {!loading && !error && <span className="bubble-hebrew">{hebrew}</span>}
+      </div>
+    </>
+  )
+}
+
+// Full popup — word + sentence translation + definitions
+export function FullPopup({ word, sentence, onClose }) {
+  const [wordResult, setWordResult] = useState(null)
+  const [sentenceHebrew, setSentenceHebrew] = useState(null)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
 
   useEffect(() => {
     let cancelled = false
     setLoading(true)
     setError(false)
-    setResult(null)
 
-    async function fetch() {
-      try {
-        if (mode === 'word') {
-          const data = await translateWord(word)
-          if (!cancelled) {
-            setResult(data)
-            setLoading(false)
-          }
-        } else {
-          const hebrew = await translateSentence(sentence)
-          if (!cancelled) {
-            setResult({ sentenceHebrew: hebrew })
-            setLoading(false)
-          }
-        }
-      } catch {
-        if (!cancelled) {
-          setError(true)
-          setLoading(false)
-        }
-      }
-    }
+    Promise.allSettled([
+      translateWord(word),
+      translateSentence(sentence),
+    ]).then(([wordRes, sentenceRes]) => {
+      if (cancelled) return
+      if (wordRes.status === 'fulfilled') setWordResult(wordRes.value)
+      if (sentenceRes.status === 'fulfilled') setSentenceHebrew(sentenceRes.value)
+      setLoading(false)
+    }).catch(() => {
+      if (cancelled) return
+      setError(true)
+      setLoading(false)
+    })
 
-    fetch()
     return () => { cancelled = true }
-  }, [word, sentence, mode])
+  }, [word, sentence])
 
   return (
     <div className="popup-overlay" onClick={onClose}>
@@ -58,33 +107,41 @@ export default function TranslationPopup({ word, sentence, mode, onClose }) {
           </div>
         )}
 
-        {!loading && !error && mode === 'word' && result && (
+        {!loading && !error && wordResult && (
           <div className="popup-word-result">
             <div className="popup-english-word">{word}</div>
-            {result.phonetic && (
-              <div className="popup-phonetic">{result.phonetic}</div>
+            {wordResult.phonetic && (
+              <div className="popup-phonetic">{wordResult.phonetic}</div>
             )}
-            <div className="popup-hebrew">{result.hebrew}</div>
-            {result.partOfSpeech && (
-              <div className="popup-pos">{result.partOfSpeech}</div>
+            <div className="popup-hebrew">{wordResult.hebrew}</div>
+            {wordResult.partOfSpeech && (
+              <div className="popup-pos">{wordResult.partOfSpeech}</div>
             )}
-            {result.definition && (
-              <div className="popup-definition">{result.definition}</div>
+            {wordResult.definition && (
+              <div className="popup-definition">{wordResult.definition}</div>
             )}
-            {result.example && (
-              <div className="popup-example">"{result.example}"</div>
+            {wordResult.example && (
+              <div className="popup-example">"{wordResult.example}"</div>
             )}
-          </div>
-        )}
 
-        {!loading && !error && mode === 'sentence' && result && (
-          <div className="popup-sentence-result">
-            <div className="popup-sentence-en" dir="ltr">{sentence}</div>
-            <div className="popup-sentence-divider" />
-            <div className="popup-sentence-he">{result.sentenceHebrew}</div>
+            {sentenceHebrew && (
+              <div className="popup-sentence-section">
+                <div className="popup-sentence-label">תרגום המשפט</div>
+                <div className="popup-sentence-en" dir="ltr">{sentence}</div>
+                <div className="popup-sentence-he">{sentenceHebrew}</div>
+              </div>
+            )}
           </div>
         )}
       </div>
     </div>
   )
+}
+
+// Keep default export for backwards compat
+export default function TranslationPopup({ word, sentence, mode, position, onClose }) {
+  if (mode === 'word') {
+    return <BubblePopup word={word} position={position} onClose={onClose} />
+  }
+  return <FullPopup word={word} sentence={sentence} onClose={onClose} />
 }
