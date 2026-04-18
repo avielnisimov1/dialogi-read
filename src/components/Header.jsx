@@ -11,8 +11,15 @@ export default function Header({ title, showBack, onBack, rightAction }) {
             ←
           </button>
         )}
-        {isHome && <img src="/logo.svg" alt="Dialogi" className="header-logo" />}
-        <h1 className="header-title">{title}</h1>
+        {isHome ? (
+          <div className="header-brand">
+            <img src="/icon.png" alt="" className="header-icon" />
+            <img src="/logo-text.png" alt="Dialogi" className="header-logo-text" />
+            <span className="header-read">Read</span>
+          </div>
+        ) : (
+          <h1 className="header-title">{title}</h1>
+        )}
       </div>
       {rightAction && <div className="header-left">{rightAction}</div>}
     </header>

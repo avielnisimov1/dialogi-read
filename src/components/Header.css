@@ -17,9 +17,28 @@
   gap: var(--spacing-sm);
 }
 
-.header-logo {
-  width: 32px;
-  height: 32px;
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.header-icon {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+}
+
+.header-logo-text {
+  height: 22px;
+  object-fit: contain;
+}
+
+.header-read {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-primary);
+  margin-right: -2px;
 }
 
 .header-title {
