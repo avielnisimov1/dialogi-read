@@ -77,23 +77,14 @@ export default async function handler(req, res) {
 
 תרגום מלא:`
   } else if (mode === 'detail') {
-    maxTokens = 2000
-    prompt = `אתה מורה פרטי לאנגלית שמלמד קורא ישראלי. תפקידך להסביר מילה באנגלית בצורה מעמיקה, ברורה ושימושית.
+    maxTokens = 500
+    prompt = `תרגם והסבר את המילה "${cleanWord}" מהמשפט: "${cleanSentence}"
 
-המילה: "${cleanWord}"
-המשפט שבו היא מופיעה: "${cleanSentence}"
-
-תן תשובה בפורמט JSON בלבד (בלי markdown, בלי backticks):
+תן תשובה קצרה בפורמט JSON בלבד (בלי markdown, בלי backticks):
 {
-  "hebrew": "התרגום המדויק של המילה לעברית בהקשר המשפט הזה",
-  "explanation": "הסבר בעברית על המשמעות של המילה — מה היא אומרת, מתי משתמשים בה, ואיך היא עובדת במשפט הזה. כתוב 2-3 משפטים.",
-  "otherMeanings": ["משמעות נוספת בעברית — עם מילה אחת שמסבירה מתי משתמשים בה", "עוד משמעות אם יש"],
-  "usageForms": ["צורות שימוש שונות של המילה באנגלית, למשל: past tense, noun form, adjective form"],
-  "exampleSentences": [
-    {"en": "משפט לדוגמה באנגלית שמראה שימוש נפוץ במילה", "he": "תרגום המשפט לעברית"},
-    {"en": "משפט נוסף עם המילה בהקשר אחר", "he": "תרגום"},
-    {"en": "משפט שלישי", "he": "תרגום"}
-  ]
+  "hebrew": "תרגום המילה לעברית",
+  "explanation": "משפט אחד בעברית שמסביר את המילה בהקשר הזה",
+  "example": {"en": "משפט לדוגמה קצר באנגלית", "he": "תרגום לעברית"}
 }`
   } else {
     prompt = `תרגם את המילה "${cleanWord}" לעברית בהקשר המשפט: "${cleanSentence}"
@@ -142,12 +133,10 @@ export default async function handler(req, res) {
         return res.status(200).json({
           hebrew: parsed.hebrew || '',
           explanation: parsed.explanation || '',
-          otherMeanings: parsed.otherMeanings || [],
-          usageForms: parsed.usageForms || [],
-          exampleSentences: parsed.exampleSentences || [],
+          example: parsed.example || null,
         })
       } catch {
-        return res.status(200).json({ hebrew: text, explanation: '', otherMeanings: [], usageForms: [], exampleSentences: [] })
+        return res.status(200).json({ hebrew: text, explanation: '', example: null })
       }
     }
 

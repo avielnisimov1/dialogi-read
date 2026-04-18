@@ -78,9 +78,7 @@ export async function getWordDetail(word, sentence = '') {
     const result = {
       hebrew: data.hebrew || '',
       explanation: data.explanation || '',
-      otherMeanings: data.otherMeanings || [],
-      usageForms: data.usageForms || [],
-      exampleSentences: data.exampleSentences || [],
+      example: data.example || null,
     }
 
     if (result.hebrew) {

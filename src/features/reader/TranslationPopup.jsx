@@ -129,37 +129,13 @@ export function DetailPopup({ word, sentence, onClose }) {
               <div className="popup-explanation">{detail.explanation}</div>
             )}
 
-            {detail.otherMeanings?.length > 0 && (
-              <div className="popup-other-meanings">
-                <div className="popup-section-label">משמעויות נוספות</div>
-                <div className="popup-meanings-list">
-                  {detail.otherMeanings.map((m, i) => (
-                    <span key={i} className="popup-meaning-tag">{m}</span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {detail.usageForms?.length > 0 && (
-              <div className="popup-usage-forms">
-                <div className="popup-section-label">צורות שימוש</div>
-                <div className="popup-forms-list">
-                  {detail.usageForms.map((f, i) => (
-                    <span key={i} className="popup-form-tag">{f}</span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {detail.exampleSentences?.length > 0 && (
+            {detail.example && (
               <div className="popup-examples-section">
-                <div className="popup-section-label">דוגמאות</div>
-                {detail.exampleSentences.map((ex, i) => (
-                  <div key={i} className="popup-example-pair">
-                    <div className="popup-example-en" dir="ltr">{ex.en}</div>
-                    <div className="popup-example-he">{ex.he}</div>
-                  </div>
-                ))}
+                <div className="popup-section-label">דוגמה</div>
+                <div className="popup-example-pair">
+                  <div className="popup-example-en" dir="ltr">{detail.example.en}</div>
+                  <div className="popup-example-he">{detail.example.he}</div>
+                </div>
               </div>
             )}
           </div>
