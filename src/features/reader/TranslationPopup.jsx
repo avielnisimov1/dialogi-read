@@ -32,7 +32,7 @@ export function BubblePopup({ word, sentence, position, onClose, onExpand }) {
   useEffect(() => {
     initialScrollRef.current = window.scrollY
     const handleScroll = () => {
-      if (Math.abs(window.scrollY - initialScrollRef.current) > 20) {
+      if (Math.abs(window.scrollY - initialScrollRef.current) > 50) {
         onClose()
       }
     }

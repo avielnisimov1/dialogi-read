@@ -20,6 +20,7 @@ export default function WordToken({ display, word, isWord, highlighted, onTap, o
     pressedRef.current = false
     timerRef.current = setTimeout(() => {
       pressedRef.current = true
+      navigator.vibrate?.(10)
       onLongPress(word)
       e.preventDefault()
     }, 500)
@@ -29,6 +30,7 @@ export default function WordToken({ display, word, isWord, highlighted, onTap, o
     if (!isWord) return
     clearTimeout(timerRef.current)
     if (!pressedRef.current) {
+      navigator.vibrate?.(5)
       const pos = getPosition(e.target)
       onTap(word, pos)
     }
@@ -40,19 +42,18 @@ export default function WordToken({ display, word, isWord, highlighted, onTap, o
   }, [])
 
   const handleClick = useCallback((e) => {
-    // Skip if already handled by touch events (mobile)
     if (handledByTouchRef.current) {
       handledByTouchRef.current = false
       return
     }
-    // Desktop fallback
     e.stopPropagation()
     const pos = getPosition(e.target)
     onTap(word, pos)
   }, [word, onTap])
 
+  // Non-word tokens (punctuation) — still need word-token class for consistent spacing
   if (!isWord) {
-    return <span>{display}</span>
+    return <span className="word-token-punct">{display}</span>
   }
 
   return (

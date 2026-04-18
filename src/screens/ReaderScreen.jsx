@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { SCREENS } from '../utils/constants'
 import TextRenderer from '../features/reader/TextRenderer'
 import TranslationPopup from '../features/reader/TranslationPopup'
@@ -30,6 +30,9 @@ export default function ReaderScreen({
   const [popupMode, setPopupMode] = useState(null)
   const [wordPosition, setWordPosition] = useState(null)
   const [showSettings, setShowSettings] = useState(false)
+  const [fabHidden, setFabHidden] = useState(false)
+
+  const scrollTimerRef = useRef(null)
 
   const { settings, update: updateSetting, cssVars } = useReaderSettings()
 
@@ -37,6 +40,22 @@ export default function ReaderScreen({
   if (onSettingsButton) {
     onSettingsButton(() => setShowSettings(true))
   }
+
+  // Auto-hide FAB while scrolling
+  useEffect(() => {
+    const handleScroll = () => {
+      setFabHidden(true)
+      clearTimeout(scrollTimerRef.current)
+      scrollTimerRef.current = setTimeout(() => {
+        setFabHidden(false)
+      }, 2000)
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      clearTimeout(scrollTimerRef.current)
+    }
+  }, [])
 
   const handleWordTap = useCallback((word, sentence, position) => {
     setSelectedWord(word)
@@ -124,7 +143,7 @@ export default function ReaderScreen({
 
       {!isQuickRead && (
         <button
-          className="add-page-fab"
+          className={`add-page-fab ${fabHidden ? 'hidden' : ''}`}
           onClick={() => navigate(SCREENS.ADD_PAGE, { bookId })}
         >
           + עמוד

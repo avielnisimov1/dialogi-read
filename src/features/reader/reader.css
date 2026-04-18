@@ -1,27 +1,41 @@
 .text-renderer {
   font-family: var(--reader-font, 'Georgia', serif);
   font-size: var(--reader-font-size, 20px);
-  line-height: var(--reader-line-height, 2);
-  color: var(--reader-color, #1A1A1A);
+  line-height: var(--reader-line-height, 1.6);
+  color: var(--reader-color, #1A1A2E);
   text-align: left;
-  word-spacing: 0;
-  letter-spacing: 0.3px;
+  word-spacing: var(--reader-word-spacing, 7px);
+  letter-spacing: 0.01em;
   user-select: none;
   -webkit-user-select: none;
-  overflow-wrap: break-word;
-  word-break: break-word;
-  hyphens: auto;
-  max-width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  touch-action: manipulation;
+  overscroll-behavior-y: contain;
+}
+
+.reader-paragraph {
+  margin: 0 0 1em 0;
+  text-indent: 0;
+}
+
+.reader-paragraph + .reader-paragraph {
+  text-indent: 1.5em;
 }
 
 .word-token {
   cursor: pointer;
   border-radius: 4px;
   padding: 2px 1px;
-  margin-right: var(--reader-word-spacing, 5px);
   transition: background-color 0.15s;
   -webkit-tap-highlight-color: transparent;
   display: inline;
+  white-space: nowrap;
+}
+
+.word-token-punct {
+  display: inline;
+  white-space: nowrap;
 }
 
 .word-token:active {

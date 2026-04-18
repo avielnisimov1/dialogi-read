@@ -6,11 +6,11 @@ import './reader.css'
 const FONTS = [
   { label: 'Georgia', value: 'Georgia, serif' },
   { label: 'System', value: '-apple-system, sans-serif' },
-  { label: 'Mono', value: 'ui-monospace, monospace' },
+  { label: 'Literata', value: "'Literata', serif" },
 ]
 
 const TEXT_COLORS = [
-  { label: 'dark', value: '#1A1A1A' },
+  { label: 'dark', value: '#1A1A2E' },
   { label: 'soft', value: '#333333' },
   { label: 'brown', value: '#3E2723' },
   { label: 'light', value: '#E0E0E0' },
@@ -26,14 +26,14 @@ const BG_COLORS = [
 
 // Auto-pick text color when background changes
 function getAutoTextColor(bgColor) {
-  const darkBgs = ['#1A1A1A']
-  if (darkBgs.includes(bgColor)) return '#E0E0E0'
-  return '#1A1A1A'
+  if (bgColor === '#1A1A1A') return '#E0E0E0'
+  if (bgColor === '#F5E6CA') return '#3E2723'
+  return '#1A1A2E'
 }
 
 const DEFAULT_SETTINGS = {
   fontSize: 20,
-  lineHeight: 2,
+  lineHeight: 1.6,
   wordSpacing: 7,
   fontFamily: FONTS[0].value,
   textColor: TEXT_COLORS[0].value,
@@ -53,7 +53,6 @@ export function useReaderSettings() {
   const update = (key, value) => {
     setSettings(prev => {
       const next = { ...prev, [key]: value }
-      // Auto-adjust text color when bg changes
       if (key === 'bgColor') {
         next.textColor = getAutoTextColor(value)
       }
@@ -92,7 +91,7 @@ export default function ReaderSettings({ settings, onUpdate, onClose }) {
             <span className="setting-value">{settings.fontSize}</span>
             <button
               className="setting-btn"
-              onClick={() => onUpdate('fontSize', Math.min(32, settings.fontSize + 2))}
+              onClick={() => onUpdate('fontSize', Math.min(40, settings.fontSize + 2))}
             >
               +
             </button>
@@ -105,7 +104,7 @@ export default function ReaderSettings({ settings, onUpdate, onClose }) {
           <div className="setting-control">
             <button
               className="setting-btn"
-              onClick={() => onUpdate('lineHeight', Math.max(1.4, +(settings.lineHeight - 0.2).toFixed(1)))}
+              onClick={() => onUpdate('lineHeight', Math.max(1.2, +(settings.lineHeight - 0.2).toFixed(1)))}
             >
               -
             </button>
