@@ -140,6 +140,17 @@ export function DetailPopup({ word, sentence, onClose }) {
               </div>
             )}
 
+            {detail.usageForms?.length > 0 && (
+              <div className="popup-usage-forms">
+                <div className="popup-section-label">צורות שימוש</div>
+                <div className="popup-forms-list">
+                  {detail.usageForms.map((f, i) => (
+                    <span key={i} className="popup-form-tag">{f}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {detail.exampleSentences?.length > 0 && (
               <div className="popup-examples-section">
                 <div className="popup-section-label">דוגמאות</div>

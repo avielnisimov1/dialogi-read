@@ -79,6 +79,7 @@ export async function getWordDetail(word, sentence = '') {
       hebrew: data.hebrew || '',
       explanation: data.explanation || '',
       otherMeanings: data.otherMeanings || [],
+      usageForms: data.usageForms || [],
       exampleSentences: data.exampleSentences || [],
     }
 

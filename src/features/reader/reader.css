@@ -256,6 +256,27 @@
   color: var(--color-text);
 }
 
+.popup-usage-forms {
+  margin-top: var(--spacing-md);
+}
+
+.popup-forms-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  justify-content: center;
+}
+
+.popup-form-tag {
+  padding: 4px 12px;
+  background: var(--color-highlight);
+  border-radius: 16px;
+  font-size: 13px;
+  font-family: var(--font-english);
+  color: var(--color-text);
+  direction: ltr;
+}
+
 .popup-examples-section {
   margin-top: var(--spacing-md);
 }
