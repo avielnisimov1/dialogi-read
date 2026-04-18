@@ -1,7 +1,8 @@
 import { SCREENS } from '../utils/constants'
+import SwipeableCard from '../components/SwipeableCard'
 import './HomeScreen.css'
 
-export default function HomeScreen({ books, navigate }) {
+export default function HomeScreen({ books, navigate, deleteBook }) {
   return (
     <div className="screen home-screen">
       <div className="home-actions">
@@ -29,21 +30,22 @@ export default function HomeScreen({ books, navigate }) {
         <div className="books-list">
           <h2 className="section-title">הספרים שלי</h2>
           {books.map(book => (
-            <button
-              key={book.id}
-              className="book-card"
-              onClick={() => navigate(SCREENS.READER, { bookId: book.id })}
-            >
-              <div className="book-info">
-                <h3 className="book-name">{book.name}</h3>
-                <p className="book-meta">
-                  {book.totalPages > 0
-                    ? `עמוד ${book.currentPageIndex + 1} מתוך ${book.totalPages}`
-                    : 'אין עמודים עדיין'}
-                </p>
-              </div>
-              <span className="book-arrow">←</span>
-            </button>
+            <SwipeableCard key={book.id} onDelete={() => deleteBook(book.id)}>
+              <button
+                className="book-card"
+                onClick={() => navigate(SCREENS.READER, { bookId: book.id })}
+              >
+                <div className="book-info">
+                  <h3 className="book-name">{book.name}</h3>
+                  <p className="book-meta">
+                    {book.totalPages > 0
+                      ? `עמוד ${book.currentPageIndex + 1} מתוך ${book.totalPages}`
+                      : 'אין עמודים עדיין'}
+                  </p>
+                </div>
+                <span className="book-arrow">←</span>
+              </button>
+            </SwipeableCard>
           ))}
         </div>
       )}

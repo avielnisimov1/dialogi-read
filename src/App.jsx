@@ -62,6 +62,7 @@ function App() {
         <HomeScreen
           books={bookOps.books}
           navigate={navigate}
+          deleteBook={bookOps.deleteBook}
         />
       )}
 
