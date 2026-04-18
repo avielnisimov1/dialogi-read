@@ -96,9 +96,10 @@ export default async function handler(req, res) {
   ]
 }`
   } else {
-    prompt = `תרגם את המילה "${cleanWord}" לעברית.
-המשפט שבו היא מופיעה: "${cleanSentence}"
-תן רק את המילה בעברית, מילה אחת או שתיים, בלי שום הסבר או תוספת.`
+    prompt = `תרגם את המילה "${cleanWord}" לעברית בהקשר המשפט: "${cleanSentence}"
+
+תן תשובה בפורמט JSON בלבד (בלי markdown, בלי backticks):
+{"hebrew":"המילה בעברית"}`
   }
 
   try {
@@ -149,8 +150,16 @@ export default async function handler(req, res) {
       }
     }
 
-    // Simple word mode — just the Hebrew word
-    return res.status(200).json({ hebrew: text })
+    // Word mode — parse JSON response
+    try {
+      const cleaned = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim()
+      const parsed = JSON.parse(cleaned)
+      return res.status(200).json({ hebrew: parsed.hebrew || '' })
+    } catch {
+      // If not JSON, use raw text but strip any non-Hebrew/non-letter chars
+      const cleanText = text.replace(/[{}":]/g, '').trim()
+      return res.status(200).json({ hebrew: cleanText })
+    }
   } catch (err) {
     console.error('Fetch error:', err)
     return res.status(500).json({ error: 'Internal server error' })
