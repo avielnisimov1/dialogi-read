@@ -461,6 +461,16 @@
   border: 2px solid var(--color-border);
 }
 
+.setting-clear-btn {
+  padding: 6px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  background: var(--color-danger);
+  color: white;
+  font-family: var(--font-hebrew);
+}
+
 .bg-option.active {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 2px white, 0 0 0 4px var(--color-primary);

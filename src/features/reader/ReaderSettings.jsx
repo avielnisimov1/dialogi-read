@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getItem, setItem } from '../../services/storageService'
+import { getItem, setItem, removeItem } from '../../services/storageService'
 import { STORAGE_KEYS } from '../../utils/constants'
 import './reader.css'
 
@@ -182,6 +182,20 @@ export default function ReaderSettings({ settings, onUpdate, onClose }) {
               />
             ))}
           </div>
+        </div>
+
+        {/* Clear cache */}
+        <div className="setting-row">
+          <span className="setting-label">נקה קאש תרגומים</span>
+          <button
+            className="setting-clear-btn"
+            onClick={() => {
+              removeItem(STORAGE_KEYS.TRANSLATIONS)
+              alert('הקאש נוקה!')
+            }}
+          >
+            נקה
+          </button>
         </div>
       </div>
     </>
