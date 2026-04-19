@@ -31,15 +31,17 @@ export default function TextRenderer({ text, highlightedSentence, style, onWordT
             return (
               <span key={si}>
                 {words.map((token, wi) => (
-                  <WordToken
-                    key={`${pi}-${si}-${wi}`}
-                    display={token.display}
-                    word={token.word}
-                    isWord={token.isWord}
-                    highlighted={isHighlighted && token.isWord}
-                    onTap={(word, pos) => handleTap(word, sentence, pos)}
-                    onLongPress={(word) => handleLong(word, sentence)}
-                  />
+                  <span key={`${pi}-${si}-${wi}`}>
+                    {wi > 0 && ' '}
+                    <WordToken
+                      display={token.display}
+                      word={token.word}
+                      isWord={token.isWord}
+                      highlighted={isHighlighted && token.isWord}
+                      onTap={(word, pos) => handleTap(word, sentence, pos)}
+                      onLongPress={(word) => handleLong(word, sentence)}
+                    />
+                  </span>
                 ))}
                 {si < para.sentences.length - 1 && ' '}
               </span>

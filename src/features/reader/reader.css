@@ -4,7 +4,7 @@
   line-height: var(--reader-line-height, 1.6);
   color: var(--reader-color, #1A1A2E);
   text-align: left;
-  word-spacing: 0;
+  word-spacing: var(--reader-word-spacing, 7px);
   letter-spacing: 0.01em;
   user-select: none;
   -webkit-user-select: none;
@@ -12,7 +12,6 @@
   margin: 0 auto;
   touch-action: manipulation;
   overscroll-behavior-y: contain;
-  overflow-wrap: break-word;
   word-break: normal;
 }
 
@@ -29,7 +28,6 @@
   cursor: pointer;
   border-radius: 4px;
   padding: 2px 1px;
-  margin-left: var(--reader-word-spacing, 7px);
   transition: background-color 0.15s;
   -webkit-tap-highlight-color: transparent;
   display: inline;
@@ -37,7 +35,6 @@
 
 .word-token-punct {
   display: inline;
-  margin-left: var(--reader-word-spacing, 7px);
 }
 
 .word-token:active {
